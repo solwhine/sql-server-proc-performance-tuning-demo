@@ -45,6 +45,7 @@ To showcase practical skills in:
 - Performance troubleshooting (IO, TIME, execution plan)
 - T-SQL scripting and optimization
 - Git branching and pull request workflows
+- TSQLT framework
 
 ---
 
@@ -54,9 +55,19 @@ This repo is designed to reflect hands-on, real-world database development pract
 
 - Showcasing SQL Server development experience to recruiters
 - Practicing execution plan reading and optimization techniques
+- Showcasing the exposure to TSQLT framework via creation of unit tests using the framework
 - Building a strong GitHub portfolio
+  
 
 ---
+## tSQLt Unit Tests
+
+Stored procedure `usp_calculateSales` is tested using the `tSQLt` framework.
+
+Test class: `calculateSalesTests`
+
+Test procedure:
+- Verifies that the output parameter returns the expected number of products sold in the last year.
 
 ##  License
 
