@@ -7,25 +7,31 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		DECLARE @Summary TABLE (
+		--SARGable filter variable
+		DECLARE @startDate DATE = DATEADD(YEAR,-1,CAST(GETDATE() AS DATE));
+
+		--usage of temp table instead of table variable
+		CREATE TABLE #Summary (
 		ProductID INT,
 		TotalQuantity INT,
 		TotalRevenue MONEY
 		);
 
-		INSERT INTO @Summary
+		INSERT INTO #Summary (ProductID, TotalQuantity, TotalRevenue)
 		SELECT s.ProductID,
 		SUM(s.Quantity),
-		SUM(s.Quantity * (p.Price - (p.Price * s.DiscountPercent)))
+		SUM(CAST(s.Quantity * p.Price * (1 - s.DiscountPercent) AS MONEY)) AS TotalRevenue
 		FROM Sales s INNER JOIN Products p 
 		ON s.ProductID=p.ProductID
-		WHERE s.SaleDate >  DATEADD(YEAR,-1,GETDATE())
+		WHERE s.SaleDate > @startDate
 		GROUP BY s.ProductID
 
-		SELECT @TotalProductsSold = COUNT(1) FROM @Summary;
+		SELECT @TotalProductsSold = COUNT(1) FROM #Summary;
 
 		--returning result
-		SELECT * FROM @Summary ORDER BY TotalRevenue DESC;
+		SELECT * FROM #Summary ORDER BY TotalRevenue DESC;
+
+		DROP TABLE #Summary
 
 		COMMIT TRANSACTION;
 	END TRY
@@ -45,4 +51,3 @@ BEGIN
 	END CATCH
 END
 GO
-
