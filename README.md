@@ -1,74 +1,52 @@
 # SQL Server Stored Procedure Performance Tuning Demo
 
-This project demonstrates how to analyze and improve the performance of a SQL Server stored procedure using:
-- Execution plans
-- IO and TIME statistics
-- Query rewrites and indexing insights
-
-##  Objective
-
-To showcase practical skills in:
-- Writing and executing stored procedures
-- Capturing and analyzing query performance using `SET STATISTICS IO` and `SET STATISTICS TIME`
-- Understanding execution plans (`.sqlplan`)
-- Isolating bottlenecks in SQL Server
+This project showcases SQL Server development with a strong emphasis on:
+- 📈 Performance optimization
+- ✅ Unit testing using [`tSQLt`](https://tsqlt.org)
+- ⚙️ Index tuning, statistics interpretation, and memory grant analysis
 
 ---
 
-##  Project Contents
+##  Key Features
 
-| File                     | Description |
-|--------------------------|-------------|
-| `CreateSchema.sql`       | Creates necessary schema/tables for the tuning scenario |
-| `CreateProcedure.sql`    | Defines the stored procedure to be optimized |
-| `ExecuteWithStats.sql`   | Executes the procedure with `SET STATISTICS IO, TIME ON` |
-| `IOStats.txt`            | Captured IO and TIME stats for analysis |
-| `ExecutionPlan.sqlplan`  | Actual execution plan saved from SSMS |
-| `README.md`              | Project overview and usage instructions |
-| `LICENSE`                | MIT License for open use |
+###  Stored Procedure: `usp_calculateSales`
+Calculates per-product revenue and quantity sold in the last 1 year.
 
----
+- Aggregates product sales using recent data
+- Outputs total number of products sold (via `OUTPUT` parameter)
+- Uses a temporary table for intermediate aggregation
 
-##  How to Use
-
-1. Run `CreateSchema.sql` to create the schema
-2. Run `CreateProcedure.sql` to create the stored procedure
-3. Run `ExecuteWithStats.sql` to execute and measure performance
-4. Open `ExecutionPlan.sqlplan` in SSMS to view the graphical plan
-5. Review `IOStats.txt` to analyze logical reads, CPU time, and duration
+###  Optimization Highlights
+- Replaced `DATEADD(...)` filter with **SARGable filter using variables**
+- Replaced `@table variable` with `#temp table` for better plan quality
+- Added **nonclustered index** on `Sales(SaleDate, ProductID)` with INCLUDE for optimal coverage
+- Improved execution plan to reduce page reads and elapsed time
+- Analyzed and explained **memory grants** and **cardinality mismatch**
 
 ---
 
-## Skills Demonstrated
+##  tSQLt Unit Testing
 
-- SQL Server stored procedure development
-- Performance troubleshooting (IO, TIME, execution plan)
-- T-SQL scripting and optimization
-- Git branching and pull request workflows
-- TSQLT framework
-
----
-
-##  Why This Project?
-
-This repo is designed to reflect hands-on, real-world database development practices — from writing T-SQL to performance tuning and source control. Ideal for:
-
-- Showcasing SQL Server development experience to recruiters
-- Practicing execution plan reading and optimization techniques
-- Showcasing the exposure to TSQLT framework via creation of unit tests using the framework
-- Building a strong GitHub portfolio
-  
-
----
-## tSQLt Unit Tests
-
-Stored procedure `usp_calculateSales` is tested using the `tSQLt` framework.
+This repo uses [`tSQLt`](https://tsqlt.org) for SQL unit testing.
 
 Test class: `calculateSalesTests`
 
-Test procedure:
-- Verifies that the output parameter returns the expected number of products sold in the last year.
+| Test File                                                      | Purpose                                        |
+|----------------------------------------------------------------|------------------------------------------------|
+| `00_createtestclass.sql`                                     | Registers test class using `tSQLt.NewTestClass` |
+| `01_test_usp_calculateSales_returns_correct_count.sql`         | Validates output count based on controlled test data |
+| `02_run_all_tests.sql`                                         | Runs the full test suite                       |
 
-##  License
+###  Fake Tables
+We use `tSQLt.FakeTable` to isolate data and test logic.
 
-MIT — feel free to use and extend.
+---
+
+##  Performance Analysis Files
+
+| File                                     | Description                                |
+|------------------------------------------|--------------------------------------------|
+| `plan before optimization.sqlplan`       | Actual execution plan (before tuning)       |
+| `plan after optimization.sqlplan`        | Optimized plan showing index seek, reduced I/O |
+| `io and time statistics before.txt`      | `SET STATISTICS IO, TIME` output (before)   |
+| `io and time stats after optimization.txt` | `SET STATISTICS IO, TIME` output (after)    |
